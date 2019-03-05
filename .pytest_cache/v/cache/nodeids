@@ -1,5 +1,0 @@
-[
-  "poremks/tests/test_gridGen.py::test_edtGen",
-  "poremks/tests/test_gridGen.py::test_fftGen",
-  "poremks/tests/test_test.py::test_imports"
-]

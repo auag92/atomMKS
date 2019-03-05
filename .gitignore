@@ -4,4 +4,12 @@
 *.vtk
 .installed.cfg
 develop-eggs
-poremks/*.egg-info
+*/*.egg-info
+build
+dist
+.pytest_cache
+*/__pycache__
+*.egg-info
+*.swp
+*.save
+__pycache__
