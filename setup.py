@@ -4,6 +4,7 @@ import sys
 from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
+
 # Package meta-data.
 NAME = 'poremks'
 DESCRIPTION = 'for analytics on nanoporous molecular structures'
@@ -11,7 +12,7 @@ URL = 'https://auag92.github.io'
 EMAIL = 'apaar92@gmail.com'
 AUTHOR = 'Apaar Shanker'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = None
+VERSION = '1.0.1'
 
 # What packages are required for this module to be executed?
 REQUIRED = [

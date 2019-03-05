@@ -1,18 +1,21 @@
+import os
 import ase
+import numpy as np
+import ase.io as aio
 from toolz.curried import pipe
+import poremks.porosity as pore
+from poremks.helpers import sphere
+import poremks.grid_generator as gen
 
 def test_edtGen():
-    import ase.io as aio
-    import numpy as np
-    import poremks.porosity as pore
-    import poremks.grid_generator as gen
+
 
     r_Ox = 1.35
     r_Si = 1.35
 
     len_pixel = 10
 
-    fname = "scripts/MFI.cif"
+    fname = os.path.join("scripts", "MFI.cif")
 
     cif = fname.split("/")[-1][:-4]
     rep = [1, 1, 1]
@@ -37,18 +40,13 @@ def test_edtGen():
     assert np.allclose(lcd, 6.79705810546875, atol=1e-3)
 
 def test_fftGen():
-    import ase.io as aio
-    import numpy as np
-    import poremks.porosity as pore
-    from poremks.helpers import sphere
-    import poremks.grid_generator as gen
 
     r_Ox = 1.35
     r_Si = 1.35
 
     len_pixel = 10
 
-    fname = "scripts/MFI.cif"
+    fname = os.path.join("scripts", "MFI.cif")
 
     cif = fname.split("/")[-1][:-4]
     rep = [1, 1, 1]
