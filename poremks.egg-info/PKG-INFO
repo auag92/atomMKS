@@ -1,0 +1,22 @@
+Metadata-Version: 2.1
+Name: poremks
+Version: 1.0.0
+Summary: for analytics on nanoporous molecular structures
+Home-page: https://auag92.github.io
+Author: Apaar Shanker
+Author-email: apaar92@gmail.com
+License: MIT
+Description: 
+        # poremks
+        
+Platform: UNKNOWN
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Requires-Python: >=3.6.0
+Description-Content-Type: text/markdown
+Provides-Extra: fast euclidean distance transform
+Provides-Extra: fast FFT

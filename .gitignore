@@ -1,0 +1,7 @@
+*.pyo
+*.pyc
+*.npy
+*.vtk
+.installed.cfg
+develop-eggs
+poremks/*.egg-info
