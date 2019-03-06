@@ -8,6 +8,16 @@
 ## General info
 poreMKS is a tool for the analytics of porous molecular structures.
 
+The Molecular Structure of DDR: ![DDR Structure](./images/DDR_structure.gif)
+
+The pore region of DDR embedded within the molecular structure. ![All Admissible Pore Structure](./images/DDR_pore_all.gif)
+
+The pore region of DDR accessible by a 1.5A radius probe is visualized as below: ![Accessible Structure](./images/DDR_pore_cleaned.gif)
+
+The skeleton of the pore structure overlayed on the pore volume is visualized as below: ![Accessible Path Structure](./images/DDR_skeleton_pore.gif)
+
+The shortest paths for the probe through the pore structure are visualized as below: ![shortest paths](./images/DDR_graph.gif)
+
 ## Technologies
 Project is created with:
 * scikit-image version: ---
