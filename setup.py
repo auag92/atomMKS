@@ -11,7 +11,7 @@ URL = 'https://auag92.github.io'
 EMAIL = 'apaar92@gmail.com'
 AUTHOR = 'Apaar Shanker'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '1.0.4'
+VERSION = '1.0.5'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
