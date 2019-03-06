@@ -43,85 +43,73 @@ def AtomCenters(coords, box, len_pixel):
     return atom_centers
 
 
-@curry
-def grid_maker_fft(atom, len_pixel=10, atomSi=1.35, atomOx=1.35, full=False):
+def grid_maker(atom, len_pixel=10, radii={"Si":1.35, "O": 1.35}, full=False, fft=False):
     dgnls = atom.cell.diagonal()
     coords = pipe(atom,
                   lambda x: x.get_positions(),
                   lambda x: np.mod(x, dgnls),
                   lambda x: x - x.min(axis=0))
-    box_dim  = np.ceil((coords.max(axis=0)) * len_pixel).astype(int) + 1
 
-    atom_ids = np.array(atom.get_chemical_symbols())
-    idx_Ox = np.where(atom_ids == 'O')[0]
-    idx_Si = np.where(atom_ids == 'Si')[0]
+    box_dim  = np.ceil((coords.max(axis=0)) * len_pixel).astype(int) + 1
+    sym_list = np.array(atom.get_chemical_symbols())
+    syms = np.unique(sym_list)
 
     atom_centers = AtomCenters(coords, box_dim, len_pixel)
-    x , y, z = [atom_centers[:,dim].astype(int) for dim in range(3)]
 
-    S_Ox, S_Si = np.zeros(box_dim), np.zeros(box_dim)
+    max_r = radii[max(radii, key=radii.get)]
 
-    S_Ox[x[idx_Ox], y[idx_Ox], z[idx_Ox]] = 1
-    S_Si[x[idx_Si], y[idx_Si], z[idx_Si]] = 1
+    scaler = np.asarray([len_pixel * (2 * max_r+1)] * 3)
 
-    if full:
-        scaler = [len_pixel * atomSi.shape[0]] * 3
+    if fft:
+        for sym in radii:
+            radii[sym] = sphere(radii[sym] * len_pixel)
+        generator = generator_fft(box_dim=box_dim, len_pixel=len_pixel, full=full, scaler=scaler)
     else:
-        scaler = 0.0
-    scaled_box_dim = (box_dim + scaler)
+        generator = generator_edt(box_dim=box_dim, len_pixel=len_pixel, full=full, scaler=scaler)
 
-    if np.isscalar(atomSi):
-        atomSi = sphere(atomSi * len_pixel)
+    S = None
+    S_list = []
+    for sym in syms:
+        c = atom_centers[sym_list==sym]
+        atom_r = radii[sym]
+        indxs = [c[:,dim].astype(int) for dim in range(3)]
+        S_list.append(generator(indxs, atom_r))
+        if S is None:
+            S = S_list[0].copy()
+        else:
+            S += S_list[-1]
 
-    if np.isscalar(atomOx):
-        atomOx = sphere(atomOx * len_pixel)
-
-    atomSi = padder(atomSi, scaled_box_dim)
-    atomOx = padder(atomOx, scaled_box_dim)
-
-    S_Ox = padder(S_Ox, scaled_box_dim)
-    S_Si = padder(S_Si, scaled_box_dim)
-
-    S_Ox = (imfilter(S_Ox, atomOx) > 1e-1) * 1
-    S_Si = (imfilter(S_Si, atomSi) > 1e-1) * 1
-
-    S    = ((S_Ox + S_Si) < 1e-1) * 1
-
-    return S, S_Ox, S_Si, box_dim
+    S = (S < 1e-2) * 1
+    return S, S_list, box_dim
 
 @curry
-def grid_maker_edt(atom, len_pixel=10, r_Si=1.35, r_Ox=1.35, full=False):
-    dgnls = atom.cell.diagonal()
-    coords = pipe(atom,
-                  lambda x: x.get_positions(),
-                  lambda x: np.mod(x, dgnls),
-                  lambda x: x - x.min(axis=0))
-    box_dim  = np.ceil((coords.max(axis=0)) * len_pixel).astype(int) + 1
+def generator_edt(indxs, atom_r, box_dim, len_pixel, full=False, scaler=0.0):
 
-    atom_ids = np.array(atom.get_chemical_symbols())
-    idx_Ox = np.where(atom_ids == 'O')[0]
-    idx_Si = np.where(atom_ids == 'Si')[0]
-
-    atom_centers = AtomCenters(coords, box_dim, len_pixel)
-    x , y, z = [atom_centers[:,dim].astype(int) for dim in range(3)]
-
-    S_Ox, S_Si = np.ones(box_dim), np.ones(box_dim)
-
-    S_Ox[x[idx_Ox], y[idx_Ox], z[idx_Ox]] = 0
-    S_Si[x[idx_Si], y[idx_Si], z[idx_Si]] = 0
+    S= np.ones(box_dim)
+    S[indxs[0], indxs[1], indxs[2]] = 0
 
     if full:
-        scaler = [len_pixel * (2*r_Si+1)] * 3
         scaled_box_dim = (box_dim + scaler)
-        S_Ox = padder(S_Ox, scaled_box_dim, 1)
-        S_Si = padder(S_Si, scaled_box_dim, 1)
+        S = padder(S, scaled_box_dim, 1)
 
-    S_Ox = transform_edt(S_Ox.astype(np.uint8)) / len_pixel
-    S_Si = transform_edt(S_Si.astype(np.uint8)) / len_pixel
+    S = transform_edt(S.astype(np.uint8)) / len_pixel
+    S = (S < atom_r) * 1
 
-    S_Ox = (S_Ox < r_Ox) * 1
-    S_Si = (S_Si < r_Si) * 1
+    return S
 
-    S    = ((S_Ox + S_Si) < 0.1) * 1
+@curry
+def generator_fft(indxs, atom_r, box_dim, len_pixel, full=False, scaler=0.0):
 
-    return S, S_Ox, S_Si, box_dim
+    S = np.zeros(box_dim)
+    S[indxs[0], indxs[1], indxs[2]] = 1
+
+    if full:
+        scaled_box_dim = box_dim + scaler
+        S = padder(S, scaled_box_dim, 0)
+    else:
+        scaled_box_dim = box_dim
+
+    atom_r = padder(atom_r, scaled_box_dim)
+    S = (imfilter(S, atom_r) > 1e-1) * 1
+
+    return S

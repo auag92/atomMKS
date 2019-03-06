@@ -23,7 +23,8 @@ def test_edtGen():
                 lambda fname: aio.read(fname),
                 lambda x: x.repeat(rep))
 
-    S = gen.grid_maker_edt(atom, len_pixel, r_Si, r_Ox, full=False)[0]
+    radii={"Si":r_Si, "O": r_Ox}
+    S = gen.grid_maker(atom, len_pixel=10, radii=radii, full=False, fft=False)[0]
 
     assert S.shape == (202, 198, 133)
 
@@ -54,9 +55,8 @@ def test_fftGen():
                 lambda fname: aio.read(fname),
                 lambda x: x.repeat(rep))
 
-    atomSi = sphere(r_Si * len_pixel)
-    atomOx = sphere(r_Ox * len_pixel)
-    S = gen.grid_maker_fft(atom, len_pixel, r_Si, r_Ox, full=False)[0]
+    radii={"Si":r_Si, "O": r_Ox}
+    S = gen.grid_maker(atom, len_pixel=10, radii=radii, full=False, fft=True)[0]
 
     assert S.shape == (202, 198, 133)
 
