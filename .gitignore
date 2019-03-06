@@ -9,7 +9,9 @@ build
 dist
 .pytest_cache
 */__pycache__
+*/*/__pycache__
 *.egg-info
 *.swp
 *.save
 __pycache__
+.pytest_cache
