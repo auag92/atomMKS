@@ -2,8 +2,11 @@
 * [General info](#general-info)
 * [Technologies](#technologies)
 * [Setup](#setup)
+* [Usage](#usage)
 * [Status](#status)
 * [References](#references)
+* [Issues](#issues)
+
 
 ## General info
 poreMKS is a tool for the analytics of porous molecular structures.
@@ -18,6 +21,7 @@ The skeleton of the pore structure overlayed on the pore volume is visualized as
 
 The shortest paths for the probe through the pore structure are visualized as below: ![shortest paths](./images/DDR_graph.gif)
 
+
 ## Technologies
 Project is created with:
 * scikit-image version: ---
@@ -26,6 +30,7 @@ Project is created with:
 * numba version: ---
 * pytorch version: ---
 * pytoolz version: ---
+
 
 ## Setup
 To run this project, install it locally using conda:
@@ -43,15 +48,19 @@ See, [https://www.continuum.io/downloads](https://www.continuum.io/downloads) fo
 
 **Windows Users** need to install visual studio build tools, in order to the compile c/c++ files assosciated with some of the dependencies.
 
-## Status
-poreMKS is currently under active development.
 
 ## Usage
 Refer to the [jupyter notebook](./scripts/tutorial_poreMKS.ipynb) in the doc folder.
 
 
+## Status
+poreMKS is currently under active development.
+
+
 ## References
 [ReadMe](https://bulldogjob.com/news/449-how-to-write-a-good-readme-for-your-github-project)
+
+
 ## Issues
 
 Please send questions and issues about installation and usage of PyMKS to [apaar92@gmail.com](mailto:apaar92@gmail.com)
