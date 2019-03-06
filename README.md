@@ -43,6 +43,7 @@ $ conda activate poremks
 $ pip install edt
 $ conda install numba
 $ conda install pytorch-cpu torchvision-cpu -c pytorch
+$ pip install poremks
 ```
 Conda is a package and environment manager bundled with anaconda python distribution.
 See, [https://www.continuum.io/downloads](https://www.continuum.io/downloads) for more details on installing and using Conda.  
