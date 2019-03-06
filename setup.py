@@ -11,11 +11,11 @@ URL = 'https://auag92.github.io'
 EMAIL = 'apaar92@gmail.com'
 AUTHOR = 'Apaar Shanker'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '1.0.6'
+VERSION = '1.0.7'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'numpy', 'scipy', 'scikit-image', 'toolz',
+    'numpy', 'scipy', 'scikit-image', 'toolz', 'ase', 'numba',
 ]
 
 # What packages are optional?

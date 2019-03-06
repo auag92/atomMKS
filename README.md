@@ -24,6 +24,7 @@ The shortest paths for the probe through the pore structure are visualized as be
 
 ## Technologies
 Project is created with:
+* ase
 * scikit-image version: ---
 * scipy version: ---
 * numpy version: ---
@@ -38,7 +39,7 @@ To run this project, install it locally using conda:
 ```
 $ cd ../<project_directory>
 $ conda create -n poremks python=3.6
-$ conda activate
+$ conda activate poremks
 $ pip install edt
 $ conda install numba
 $ conda install pytorch-cpu torchvision-cpu -c pytorch
