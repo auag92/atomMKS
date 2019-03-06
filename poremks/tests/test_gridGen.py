@@ -4,7 +4,6 @@ import numpy as np
 import ase.io as aio
 from toolz.curried import pipe
 import poremks.porosity as pore
-from poremks.helpers import sphere
 import poremks.grid_generator as gen
 
 def test_edtGen():
@@ -31,14 +30,14 @@ def test_edtGen():
     padval = ((1, 1), (1, 1), (0, 0))
 
     S_dgrid = pipe(S,
-                   lambda s: np.pad(S, padval, 'constant', constant_values=0),
-                   lambda s: pore.dgrid(S, len_pixel=len_pixel))
+                   lambda s: np.pad(s, padval, 'constant', constant_values=0),
+                   lambda s: pore.dgrid(s, len_pixel=len_pixel))
 
     pld  = pore.get_pld(S_dgrid)
-    assert np.allclose(pld, 4.4453125, atol=1e-3)
+    assert np.allclose(pld, 2.61718, atol=1e-3)
 
     lcd  = pore.get_lcd(S_dgrid)
-    assert np.allclose(lcd, 6.79705810546875, atol=1e-3)
+    assert np.allclose(lcd, 6.79705, atol=1e-3)
 
 def test_fftGen():
 
@@ -63,11 +62,11 @@ def test_fftGen():
     padval = ((1, 1), (1, 1), (0, 0))
 
     S_dgrid = pipe(S,
-                   lambda s: np.pad(S, padval, 'constant', constant_values=0),
-                   lambda s: pore.dgrid(S, len_pixel=len_pixel))
+                   lambda s: np.pad(s, padval, 'constant', constant_values=0),
+                   lambda s: pore.dgrid(s, len_pixel=len_pixel))
 
     pld  = pore.get_pld(S_dgrid)
-    assert np.allclose(pld, 4.4453125, atol=1e-3)
+    assert np.allclose(pld, 2.6171875, atol=1e-3)
 
     lcd  = pore.get_lcd(S_dgrid)
-    assert np.allclose(lcd, 6.72309, atol=1e-3)
+    assert np.allclose(lcd, 6.7230939, atol=1e-3)

@@ -45,6 +45,12 @@ def AtomCenters(coords, box, len_pixel):
 
 def grid_maker(atom, len_pixel=10, radii={"Si":1.35, "O": 1.35}, full=False, fft=False):
     dgnls = atom.cell.diagonal()
+    if np.any(dgnls == 0):
+        coords = atom.get_positions()
+        cmax = coords.max(axis=0)
+        cmin = coords.min(axis=0)
+        dgnls = cmax - cmin
+
     coords = pipe(atom,
                   lambda x: x.get_positions(),
                   lambda x: np.mod(x, dgnls),
