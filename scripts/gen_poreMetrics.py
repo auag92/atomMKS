@@ -23,27 +23,38 @@ def poreStructureMaker(fname, save_dir="", r_probe=0.1, len_pixel=10):
         pld = pore.get_pld(S)
         lcd = pore.get_lcd(S)
 
-        S_1 = pore.gen_cleanPore(S,
-                                 r_probe=r_probe,
-                                 r_min=2.5,
-                                 len_pixel=len_pixel)
-        S_1 = (S_1 > 0) * 1
-        S_11 = np.pad(S_1, pad_width=((0,0),(0,0),(len_pixel, len_pixel)),
-                      mode = "constant", constant_values=1)
-        S_2 = pore.gen_medialAxis(S_11)[:,:,len_pixel:-len_pixel]
+        # generates probe accessible pore region
+        S_1 = (pore.gen_cleanPore(S,
+                                  r_probe=r_probe,
+                                  r_min=2.5,
+                                  len_pixel=len_pixel) > 0) * 1
 
+        # generates medial axis of the accessible pore region
+        S_2 = pipe(S_1,
+                   lambda x: np.pad(x,
+                                    pad_width=((0,0),(0,0),(len_pixel, len_pixel)),
+                                    mode = "constant", constant_values=1),
+                   lambda x: pore.gen_medialAxis(x)[:,:,len_pixel:-len_pixel])
+
+        # Prunes medial axis to return, only the paths connecting opposing surfaces
         S_3, paths = pore.gen_throughPath(S_2, depth=1)
 
+        # Number of independant transport channels in the structure
         n_paths = len(pore.return_labelled(S_1)[-1])
 
+        # accessible surface area
         asa = pore.get_asa(S_1, len_pixel=10)
 
+        # accessile volume
         av = np.count_nonzero(S_1) * (1 / len_pixel)**3
 
+        # pore size distribution
         psd = S[S_2==1]
 
+        # dimensions of the structure
         dim = np.asarray(S.shape) / len_pixel
 
+        # save all computed data as a matfile
         sio.savemat("%s_pore" % cif, {"pld":pld,
                                       "lcd":lcd,
                                       "n_paths":n_paths,
@@ -59,11 +70,21 @@ def poreStructureMaker(fname, save_dir="", r_probe=0.1, len_pixel=10):
     except Exception as err:
         print("Exception for file : %s" % (fname), err)
 
-
 def prll():
-    flist = sorted(glob.glob("*_dgrid.mat"))
+    input_folder = ""
+    input_fnames = os.path.join(input_folder, "*_dgrid.mat")
+    output_folder = ""
+
+    flist = sorted(glob.glob())
     print("no. of files: %d" %len(flist))
-    func = poreStructureMaker(r_probe = 1.0, len_pixel=10)
+
+    r_probe = 1.0 # Probe Radius
+    len_pixel = 10 # No. of voxels per angstrom - resolution = 1/len_pixel
+
+    func = poreStructureMaker(r_probe=r_probe,
+                              len_pixel=len_pixel,
+                              save_dir=output_folder)
+
     with mp.Pool(processes=2) as p:
         p.map(func, flist)
 

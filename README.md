@@ -40,8 +40,7 @@ To run this project, install it locally using conda:
 $ cd ../<project_directory>
 $ conda create -n poremks python=3.6
 $ conda activate poremks
-$ pip install edt
-$ conda install numba
+$ pip install -r requirements.txt
 $ conda install pytorch-cpu torchvision-cpu -c pytorch
 $ pip install poremks
 ```
@@ -60,6 +59,8 @@ poreMKS is currently under active development.
 
 
 ## References
+[EDT](https://github.com/seung-lab/euclidean-distance-transform-3d/)
+[scikit-image](https://scikit-image.org/)
 [ReadMe](https://bulldogjob.com/news/449-how-to-write-a-good-readme-for-your-github-project)
 
 

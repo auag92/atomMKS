@@ -14,7 +14,7 @@ def test_edtGen():
 
     len_pixel = 10
 
-    fname = os.path.join("scripts", "MFI.cif")
+    fname = os.path.join("scripts", "iza_zeolites", "MFI.cif")
 
     cif = fname.split("/")[-1][:-4]
     rep = [1, 1, 1]
@@ -46,7 +46,7 @@ def test_fftGen():
 
     len_pixel = 10
 
-    fname = os.path.join("scripts", "MFI.cif")
+    fname = os.path.join("scripts", "iza_zeolites", "MFI.cif")
 
     cif = fname.split("/")[-1][:-4]
     rep = [1, 1, 1]

@@ -1,8 +1,9 @@
 ase
 numba
-numpy >= 1.9
+numpy = 1.16.0
 scipy >= 0.14
 scikit-image
 toolz
-torch
-torchvision
+jupyter
+ipython
+matplotlib
