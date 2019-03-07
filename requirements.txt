@@ -4,6 +4,7 @@ numpy ==1.16.0
 scipy >= 0.14
 scikit-image
 toolz
+edt
 jupyter
 ipython
 matplotlib
