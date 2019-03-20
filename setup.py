@@ -20,8 +20,8 @@ REQUIRED = [
 
 # What packages are optional?
 EXTRAS = {
-    'fast FFT': ['pytorch'],
-    'fast euclidean distance transform': ['edt'],
+    'for fast FFT': ['pytorch'],
+    'for fast euclidean distance transform': ['edt'],
 }
 
 # The rest you shouldn't have to touch too much :)

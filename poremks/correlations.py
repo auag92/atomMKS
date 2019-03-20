@@ -37,7 +37,7 @@ def to_torch(x, device=torch.device("cpu")):
 
 
 @curry
-def imfilter(f_data, g_data=None, device=torch.device("cpu")):
+def convolve(f_data, g_data=None, device=torch.device("cpu")):
     """
     Returns auto-correlation or cross-correlation of the input spatial fields
     """
@@ -113,5 +113,5 @@ def compute_statistics(boundary="periodic", corrtype="auto", cutoff=None, device
 
     return pipe(args0,
                 lambda x : padder(x),
-                lambda x : imfilter(x, y, device=device),
+                lambda x : convolve(x, y, device=device),
                 lambda x : cropper(x) / size)

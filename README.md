@@ -1,6 +1,6 @@
 ## Table of contents
 * [General info](#general-info)
-* [Technologies](#technologies)
+* [Dependencies](#dependencies)
 * [Setup](#setup)
 * [Usage](#usage)
 * [Status](#status)
@@ -22,15 +22,15 @@ The skeleton of the pore structure overlayed on the pore volume is visualized as
 The shortest paths for the probe through the pore structure are visualized as below: ![shortest paths](./images/DDR_graph.gif)
 
 
-## Technologies
+## Dependencies
 Project is created with:
-* ase
-* scikit-image version: ---
-* scipy version: ---
-* numpy version: ---
-* numba version: ---
-* pytorch version: ---
-* pytoolz version: ---
+* ase: 3.16.2
+* scikit-image version: 0.14.0
+* scipy version: 1.1.0
+* numpy version: 1.16.0
+* numba version: 0.39.0
+* pytorch version: 0.4.1
+* pytoolz version: 0.9.0
 
 
 ## Setup

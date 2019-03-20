@@ -15,10 +15,10 @@ try:
     import torch
     torch_rfft = curry(torch.rfft) # pylint: disable=invalid-name
     torch_irfft = curry(torch.irfft) # pylint: disable=invalid-name
+
     def conjugate(x):
         """
-        For generating the conjugate
-        of a complex torch tensor
+        returns the conjugate of a complex torch tensor
         """
         y = torch.empty_like(x)
         y[..., 1] = x[..., 1] * -1
@@ -28,7 +28,7 @@ try:
     @curry
     def mult(x1, x2):
         """
-        For multiplying imaginary arrays using PyTorch
+        returns the product of complext torch tensors x1 and x2
         """
         y = torch.empty_like(x1)
         y[..., 0] = x1[..., 0]*x2[..., 0] - x1[..., 1]*x2[..., 1]
