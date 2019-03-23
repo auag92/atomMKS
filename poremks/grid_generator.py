@@ -43,7 +43,8 @@ def AtomCenters(coords, box, len_pixel):
     return atom_centers
 
 
-def grid_maker(atom, len_pixel=10, radii={"Si":1.35, "O": 1.35}, full=False, fft=False):
+def grid_maker(atom, atomic_radii=None, len_pixel=10, full=False, fft=False):
+
     dgnls = atom.cell.diagonal()
     if np.any(dgnls == 0):
         coords = atom.get_positions()
@@ -62,23 +63,25 @@ def grid_maker(atom, len_pixel=10, radii={"Si":1.35, "O": 1.35}, full=False, fft
 
     atom_centers = AtomCenters(coords, box_dim, len_pixel)
 
-    max_r = radii[max(radii, key=radii.get)]
+    max_r = atomic_radii[max(atomic_radii, key=atomic_radii.get)] # max atom radius
 
     scaler = np.asarray([len_pixel * (2 * max_r+1)] * 3)
 
+    spheres = {}
     if fft:
-        for sym in radii:
-            radii[sym] = sphere(radii[sym] * len_pixel)
+        for symbol in atomic_radii:
+            spheres[symbol] = sphere(atomic_radii[symbol] * len_pixel)
         generator = generator_fft(box_dim=box_dim, len_pixel=len_pixel, full=full, scaler=scaler)
     else:
+        spheres = atomic_radii.copy()
         generator = generator_edt(box_dim=box_dim, len_pixel=len_pixel, full=full, scaler=scaler)
 
     S = None
     S_list = []
     for sym in syms:
-        c = atom_centers[sym_list==sym]
-        atom_r = radii[sym]
-        indxs = [c[:,dim].astype(int) for dim in range(3)]
+        c = atom_centers[sym_list == sym]
+        atom_r = spheres[sym]
+        indxs = [c[:, dim].astype(int) for dim in range(3)]
         S_list.append(generator(indxs, atom_r))
         if S is None:
             S = S_list[0].copy()

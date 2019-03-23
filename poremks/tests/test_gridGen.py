@@ -23,7 +23,7 @@ def test_edtGen():
                 lambda x: x.repeat(rep))
 
     radii={"Si":r_Si, "O": r_Ox}
-    S = gen.grid_maker(atom, len_pixel=10, radii=radii, full=False, fft=False)[0]
+    S = gen.grid_maker(atom, len_pixel=10, atomic_radii=radii, full=False, fft=False)[0]
 
     assert S.shape == (202, 198, 133)
 
@@ -55,7 +55,7 @@ def test_fftGen():
                 lambda x: x.repeat(rep))
 
     radii={"Si":r_Si, "O": r_Ox}
-    S = gen.grid_maker(atom, len_pixel=10, radii=radii, full=False, fft=True)[0]
+    S = gen.grid_maker(atom, len_pixel=10, atomic_radii=radii, full=False, fft=True)[0]
 
     assert S.shape == (202, 198, 133)
 
