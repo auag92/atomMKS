@@ -15,14 +15,16 @@ VERSION = '1.0.7'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'numpy', 'scipy', 'scikit-image', 'toolz', 'ase', 'numba',
+    'numpy', 'scipy', 'scikit-image', 'toolz', 
+    'ase', 'numba', 'torch', 'torchvision', 'edt', 
+    'matplotlib', 'jupyter', 'xlrd', 'pandas'
 ]
 
 # What packages are optional?
 EXTRAS = {
-    'for fast FFT': ['pytorch'],
-    'for fast euclidean distance transform': ['edt'],
-}
+     'for visualization': ['seaborn'],
+     'for machine learning': ['sklearn'],
+ }
 
 # The rest you shouldn't have to touch too much :)
 # ------------------------------------------------
