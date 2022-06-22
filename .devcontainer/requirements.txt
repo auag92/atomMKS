@@ -1,5 +1,5 @@
 ase
-numpy == 1.16.0
+numpy == 1.22.0
 scipy >= 0.14
 scikit-image
 toolz
