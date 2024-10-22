@@ -1,6 +1,6 @@
 ase
-numpy == 1.16.0
-scipy >= 0.14
+numpy
+scipy
 scikit-image
 toolz
 edt
@@ -11,3 +11,8 @@ xlrd
 pandas
 torch
 torchvision
+python-dotenv
+click
+black #linting
+isort #lining
+flake8 #liniting

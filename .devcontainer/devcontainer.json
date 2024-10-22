@@ -1,6 +1,0 @@
-{
-    "name": "DataExplorer Remote Container",
-    "dockerFile": "Dockerfile",
-    "extensions":["ms-python.python"],
-    "appPort": 8000
-}
