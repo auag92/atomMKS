@@ -1,5 +1,4 @@
 ase
-numpy
 scipy
 scikit-image
 toolz
@@ -16,3 +15,7 @@ click
 black #linting
 isort #lining
 flake8 #liniting
+numpy==1.26.4
+openpyxl
+openai
+gradio
