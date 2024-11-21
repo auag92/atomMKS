@@ -3,6 +3,7 @@ scipy
 scikit-image
 toolz
 edt
+numba
 jupyter
 matplotlib
 xlrd
@@ -17,3 +18,4 @@ numpy==1.26.4
 openpyxl
 openai
 gradio
+pytest
