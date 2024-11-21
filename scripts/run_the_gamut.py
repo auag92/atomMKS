@@ -78,7 +78,7 @@ def generate_pore_metrics(
 
 if __name__ == "__main__":
     generate_pore_metrics(
-        fname="/mnt/efs/apaarshanker/projects/n2dm/code/atomMKS_dbx/datasets/iza_zeolites/ABW.cif",
+        fname="../datasets/iza_zeolites/ABW.cif",
         radii={"Si": 1.35, "O": 1.35, "H": 0.5},
         len_pixel=10,
         r_probe=0.5,
