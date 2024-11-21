@@ -1,14 +1,16 @@
+import glob
+import multiprocessing as mp
 import os
 import time
-import glob
+
+import ase.io as aio
 import click
 import numpy as np
-import ase.io as aio
 import scipy.io as sio
-import multiprocessing as mp
-import atommks.porosity as pore
-from toolz.curried import pipe, curry
+from toolz.curried import curry, pipe
+
 import atommks.grid_generator as gen
+import atommks.porosity as pore
 from atommks.helpers import write2vtk
 
 

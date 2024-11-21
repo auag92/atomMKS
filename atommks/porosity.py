@@ -8,7 +8,7 @@ from skimage.morphology import remove_small_objects
 from skimage.morphology import skeletonize_3d as sklz
 from toolz.curried import curry, pipe
 
-from .helpers import imfilter, transform_edt, padder
+from .helpers import imfilter, padder, transform_edt
 
 erasure = curry(remove_small_objects)
 

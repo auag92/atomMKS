@@ -1,4 +1,7 @@
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 from toolz.curried import curry, pipe
 
 try:
@@ -145,6 +148,29 @@ def return_slice(x_data, cutoff):
         ]
     else:
         print("Incorrect Number of Dimensions!")
+
+
+def get_radii(atom_id, radius_type="vdw"):
+    """
+    atom_id: element symbol
+    radius_type = "vdw" for Van der Waals or "cov" for Covalent
+    """
+
+    xl = pd.ExcelFile(
+        Path(__file__).parents[1] / "assets" / "Elemental_Radii.xlsx"
+    )
+    df = xl.parse(sheet_name=0, header=2, index_col=1)
+
+    if radius_type == "cov":
+        key = 6
+    elif radius_type == "vdw":
+        key = 7
+    else:
+        raise ValueError("radius_type not supported")
+    if atom_id in df.index:
+        return df.loc[atom_id][key]
+    else:
+        raise ValueError("Elemental symbol not found")
 
 
 @curry

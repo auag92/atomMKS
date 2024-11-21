@@ -1,11 +1,13 @@
+import glob
+import multiprocessing as mp
 import os
 import time
-import glob
+
 import click
 import numpy as np
 import scipy.io as sio
-import multiprocessing as mp
-from toolz.curried import pipe, curry
+from toolz.curried import curry, pipe
+
 import atommks.porosity as pore
 
 

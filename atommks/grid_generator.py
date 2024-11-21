@@ -1,7 +1,7 @@
 import numpy as np
 from toolz.curried import curry, pipe
 
-from .helpers import padder, imfilter, transform_edt, sphere
+from .helpers import imfilter, padder, sphere, transform_edt
 
 
 @curry

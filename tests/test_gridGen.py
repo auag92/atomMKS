@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import ase.io as aio
 import numpy as np
@@ -15,13 +15,15 @@ def test_edtGen():
 
     len_pixel = 10
 
-    fname = os.path.join("scripts", "iza_zeolites", "MFI.cif")
+    fname = Path(__file__).parents[1] / "datasets" / "iza_zeolites" / "MFI.cif"
 
     rep = [1, 1, 1]
     atom = pipe(fname, lambda fname: aio.read(fname), lambda x: x.repeat(rep))
 
     radii = {"Si": r_Si, "O": r_Ox}
-    S = gen.grid_maker(atom, len_pixel=10, atomic_radii=radii, full=False, fft=False)[0]
+    S = gen.grid_maker(
+        atom, len_pixel=10, atomic_radii=radii, full=False, fft=False
+    )[0]
 
     assert S.shape == (202, 198, 133)
 
@@ -47,13 +49,15 @@ def test_fftGen():
 
     len_pixel = 10
 
-    fname = os.path.join("scripts", "iza_zeolites", "MFI.cif")
+    fname = Path(__file__).parents[1] / "datasets" / "iza_zeolites" / "MFI.cif"
 
     rep = [1, 1, 1]
     atom = pipe(fname, lambda fname: aio.read(fname), lambda x: x.repeat(rep))
 
     radii = {"Si": r_Si, "O": r_Ox}
-    S = gen.grid_maker(atom, len_pixel=10, atomic_radii=radii, full=False, fft=True)[0]
+    S = gen.grid_maker(
+        atom, len_pixel=10, atomic_radii=radii, full=False, fft=True
+    )[0]
 
     assert S.shape == (202, 198, 133)
 
