@@ -53,6 +53,42 @@ See, [https://www.continuum.io/downloads](https://www.continuum.io/downloads) fo
 Refer to the [jupyter notebook](./tutorial/tutorial_atomMKS.ipynb) in the doc folder.
 
 
+We provide two scripts to analyze structure files in bulk
+
+#### 1. Generate and save grid-representations to disc for a list of CIF files
+
+```
+Usage: gen_gridStructures.py [OPTIONS]
+
+  Command-line tool to process structures in CIF format with parallel
+  processing. # noqa: E501
+
+Options:
+  -i, --input-dir PATH     Input directory containing CIF files.  [required]
+  -o, --output-dir TEXT    Output directory to save processed files.
+                           [required]
+  -l, --len-pixel INTEGER  Length of pixel grid (default is 10).
+  -r, --rep TEXT           Repeat the structure (default is "1,1,1").
+  -p, --processes INTEGER  Number of parallel processes to use (default is 1).
+  --help                   Show this message and exit.
+```
+
+#### 2. Used the saved grid-representations from prior set to compute and save pore characteristics
+
+```
+Usage: gen_poreMetrics.py [OPTIONS]
+
+  Command-line tool to process MAT files for pore structure analysis.
+
+Options:
+  -i, --input-folder PATH   Input folder containing MAT files.  [required]
+  -o, --output-folder PATH  Output folder to save processed files.  [required]
+  -r, --r-probe FLOAT       Probe radius (default is 1.0).
+  -l, --len-pixel INTEGER   Number of voxels per angstrom (default is 10).
+  -p, --processes INTEGER   Number of parallel processes (default is 2).
+  --help                    Show this message and exit.
+```
+
 ## Status
 atomMKS is currently under active development.
 

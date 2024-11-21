@@ -137,14 +137,14 @@ def return_slice(x_data, cutoff):
 
     if x_data.ndim == 2:
         return x_data[
-            (s[0] - cutoff[0]): (s[0] + cutoff[0] + 1),
-            (s[1] - cutoff[1]): (s[1] + cutoff[1] + 1),
+            (s[0] - cutoff[0]) : (s[0] + cutoff[0] + 1),
+            (s[1] - cutoff[1]) : (s[1] + cutoff[1] + 1),
         ]
     elif x_data.ndim == 3:
         return x_data[
-            (s[0] - cutoff[0]): (s[0] + cutoff[0] + 1),
-            (s[1] - cutoff[1]): (s[1] + cutoff[1] + 1),
-            (s[2] - cutoff[2]): (s[2] + cutoff[2] + 1),
+            (s[0] - cutoff[0]) : (s[0] + cutoff[0] + 1),
+            (s[1] - cutoff[1]) : (s[1] + cutoff[1] + 1),
+            (s[2] - cutoff[2]) : (s[2] + cutoff[2] + 1),
         ]
     else:
         print("Incorrect Number of Dimensions!")
