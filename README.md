@@ -24,13 +24,13 @@ The shortest paths for the probe through the pore structure are visualized as be
 
 ## Dependencies
 Project is created with:
-* ase: 3.16.2
-* scikit-image version: 0.14.0
-* scipy version: 1.1.0
-* numpy version: 1.16.0
-* numba version: 0.39.0
-* pytorch version: 0.4.1
-* pytoolz version: 0.9.0
+* ase==3.23.0
+* scikit-image==0.24.0
+* scipy==1.14.1
+* numpy==1.26.4
+* numba==0.60.0
+* torch==2.5.0
+* toolz==1.0.0
 
 
 ## Setup
@@ -50,7 +50,7 @@ See, [https://www.continuum.io/downloads](https://www.continuum.io/downloads) fo
 
 
 ## Usage
-Refer to the [jupyter notebook](./scripts/tutorial_atomMKS.ipynb) in the doc folder.
+Refer to the [jupyter notebook](./tutorial/tutorial_atomMKS.ipynb) in the doc folder.
 
 
 ## Status
