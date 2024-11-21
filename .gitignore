@@ -20,4 +20,4 @@ __pycache__
 *-checkpoint.ipynb
 scripts/*.csv
 scripts/.gradio
-
+persist/

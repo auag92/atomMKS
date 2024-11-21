@@ -19,3 +19,6 @@ openpyxl
 openai
 gradio
 pytest
+uvicorn
+fastapi
+SQLAlchemy
