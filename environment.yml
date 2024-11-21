@@ -1,4 +1,0 @@
-name: atommks
-dependencies:
-  - python=3.6
-  - pip

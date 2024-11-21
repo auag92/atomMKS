@@ -9,7 +9,7 @@
 
 
 ## General info
-poreMKS is a tool for the analytics of porous molecular structures.
+atomMKS is a tool for the analytics of porous molecular structures.
 
 The Molecular Structure of DDR: ![DDR Structure](./images/DDR_structure.gif)
 
@@ -38,11 +38,10 @@ To run this project, install it locally using conda:
 
 ```
 $ cd ../<project_directory>
-$ conda create -n poremks python=3.6
-$ conda activate poremks
+$ conda create -n atom python=3.10
+$ conda activate atom
 $ pip install -r requirements.txt
-$ conda install pytorch-cpu torchvision-cpu -c pytorch
-$ pip install poremks
+$ pip install atommks
 ```
 Conda is a package and environment manager bundled with anaconda python distribution.
 See, [https://www.continuum.io/downloads](https://www.continuum.io/downloads) for more details on installing and using Conda.  
@@ -51,17 +50,16 @@ See, [https://www.continuum.io/downloads](https://www.continuum.io/downloads) fo
 
 
 ## Usage
-Refer to the [jupyter notebook](./scripts/tutorial_poreMKS.ipynb) in the doc folder.
+Refer to the [jupyter notebook](./scripts/tutorial_atomMKS.ipynb) in the doc folder.
 
 
 ## Status
-poreMKS is currently under active development.
+atomMKS is currently under active development.
 
 
 ## References
-[EDT](https://github.com/seung-lab/euclidean-distance-transform-3d/)
-[scikit-image](https://scikit-image.org/)
-[ReadMe](https://bulldogjob.com/news/449-how-to-write-a-good-readme-for-your-github-project)
+[EDT](https://github.com/seung-lab/euclidean-distance-transform-3d/)  
+[scikit-image](https://scikit-image.org/)  
 
 
 ## Issues
