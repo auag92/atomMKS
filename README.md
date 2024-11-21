@@ -65,3 +65,12 @@ atomMKS is currently under active development.
 ## Issues
 
 Please send questions and issues about installation and usage of PyMKS to [apaar92@gmail.com](mailto:apaar92@gmail.com)
+
+
+## Lint instructions
+
+```
+black --line-length 79 .
+isort .
+flake8 .
+```
