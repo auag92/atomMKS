@@ -19,7 +19,7 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Set environment variable for SQLite database path
-ENV DATABASE_URL=sqlite:////data/materials.db
+ENV DATABASE_URL=sqlite:////data/nano_materials.db
 
 # Copy the rest of the application code into the container
 COPY . /app
