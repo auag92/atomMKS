@@ -34,4 +34,4 @@ RUN pip install .
 EXPOSE 8000
 
 # Run the app with Uvicorn
-CMD ["uvicorn", "services.n2dm_app:n2dm_app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "apps.nanoporous_materials_db:n2dm_db", "--host", "0.0.0.0", "--port", "8000"]

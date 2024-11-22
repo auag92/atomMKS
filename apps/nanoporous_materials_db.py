@@ -1,22 +1,25 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
-from sqlalchemy import create_engine, Column, Integer, Float, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-import atommks.porosity as pore
-import atommks.grid_generator as gen
+import os
+
 import ase.io as aio
 import numpy as np
-import os
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from sqlalchemy import Column, Float, Integer, String, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from toolz.curried import pipe
 
+import atommks.grid_generator as gen
+import atommks.porosity as pore
+
 # FastAPI app initialization
-n2dm_app = FastAPI()
+n2dm_db = FastAPI()
 
 # Database setup
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./nano_materials.db")
 engine = create_engine(DATABASE_URL)
 Base = declarative_base()
+
 
 # Define the Materials table
 class Material(Base):
@@ -30,10 +33,12 @@ class Material(Base):
     n_paths = Column(Integer)
     avg_path = Column(Float)
     avg_psd = Column(Float)
-    dim = Column(String)
+    slab_height = Column(Float)
+
 
 Base.metadata.create_all(bind=engine)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 # Dependency to get DB session
 def get_db():
@@ -42,6 +47,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 # Utility function for metrics computation
 def compute_metrics(cif_path, radii, len_pixel, r_probe):
@@ -73,19 +79,13 @@ def compute_metrics(cif_path, radii, len_pixel, r_probe):
         lambda s: pore.dgrid(s, len_pixel),
     )
 
-    pld = pore.get_pld(
-        S
-    )  # calculates the pore limiting diameter, a scaler
+    pld = pore.get_pld(S)  # calculates the pore limiting diameter, a scaler
 
-    lcd = pore.get_lcd(
-        S
-    )  # calculates the largest cavity diameter, a scaler
+    lcd = pore.get_lcd(S)  # calculates the largest cavity diameter, a scaler
 
     # generates probe accessible pore region [grid representation]
     S_1 = (
-        pore.gen_cleanPore(
-            S, r_probe=r_probe, r_min=2.5, len_pixel=len_pixel
-        )
+        pore.gen_cleanPore(S, r_probe=r_probe, r_min=2.5, len_pixel=len_pixel)
         > 0
     ) * 1
 
@@ -120,15 +120,24 @@ def compute_metrics(cif_path, radii, len_pixel, r_probe):
     dim = np.asarray(S.shape) / len_pixel
 
     return {
-        "pld": pld, "lcd": lcd, "asa": asa, "av": av,
-        "n_paths": n_paths, "avg_path": np.mean(paths), "avg_psd": np.mean(psd),
-        "dim": "10, 10, 10"
+        "pld": pld,
+        "lcd": lcd,
+        "asa": asa,
+        "av": av,
+        "n_paths": n_paths,
+        "avg_path": np.mean(paths),
+        "avg_psd": np.mean(psd),
+        "slab_height": dim[-1],
     }
+
 
 # Endpoints
 
-@n2dm_app.post("/add_material/")
-async def add_material(name: str, file: UploadFile = File(...), db=Depends(get_db)):
+
+@n2dm_db.post("/add_material/")
+async def add_material(
+    name: str, file: UploadFile = File(...), db=Depends(get_db)
+):
     # Save uploaded file
     file_path = f"/tmp/{file.filename}"
     with open(file_path, "wb") as f:
@@ -136,9 +145,13 @@ async def add_material(name: str, file: UploadFile = File(...), db=Depends(get_d
 
     # Compute metrics
     try:
-        metrics = compute_metrics(file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5)
+        metrics = compute_metrics(
+            file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing CIF: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Error processing CIF: {e}"
+        )
 
     # Save to database
     material = Material(name=name, **metrics)
@@ -146,7 +159,8 @@ async def add_material(name: str, file: UploadFile = File(...), db=Depends(get_d
     db.commit()
     return {"message": f"Material '{name}' added successfully!"}
 
-@n2dm_app.post("/populate_db/")
+
+@n2dm_db.post("/populate_db/")
 async def populate_db(files: list[UploadFile] = File(...), db=Depends(get_db)):
     for file in files:
         file_path = f"/tmp/{file.filename}"
@@ -154,15 +168,23 @@ async def populate_db(files: list[UploadFile] = File(...), db=Depends(get_db)):
             f.write(file.file.read())
 
         # Compute metrics and add to DB
-        metrics = compute_metrics(file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5)
+        metrics = compute_metrics(
+            file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5
+        )
         material = Material(name=file.filename, **metrics)
         db.add(material)
 
     db.commit()
     return {"message": "Database populated successfully!"}
 
-@n2dm_app.get("/query/")
-def query_materials(name: str = None, pld_min: float = None, pld_max: float = None, db=Depends(get_db)):
+
+@n2dm_db.get("/query/")
+def query_materials(
+    name: str = None,
+    pld_min: float = None,
+    pld_max: float = None,
+    db=Depends(get_db),
+):
     query = db.query(Material)
     if name:
         query = query.filter(Material.name == name)
