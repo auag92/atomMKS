@@ -162,20 +162,43 @@ async def add_material(
 
 @n2dm_db.post("/populate_db/")
 async def populate_db(files: list[UploadFile] = File(...), db=Depends(get_db)):
-    for file in files:
-        file_path = f"/tmp/{file.filename}"
-        with open(file_path, "wb") as f:
-            f.write(file.file.read())
+    try:
+        for file in files:
+            # Extract the base file name to avoid path issues
+            filename = os.path.basename(file.filename)
 
-        # Compute metrics and add to DB
-        metrics = compute_metrics(
-            file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5
+            # Generate a temporary file path
+            file_path = f"/tmp/{filename}"
+
+            # Write the uploaded file to the temporary directory
+            with open(file_path, "wb") as f:
+                f.write(
+                    await file.read()
+                )  # Use `await` to handle async file reading
+
+            # Compute metrics and add to DB
+            metrics = compute_metrics(
+                file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5
+            )
+
+            # Ensure unique material names in the database
+            if db.query(Material).filter(Material.name == filename).first():
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Material {filename} already exists in the database.",  # noqa: E501
+                )
+
+            material = Material(name=filename, **metrics)
+            db.add(material)
+
+        db.commit()
+        return {"message": "Database populated successfully!"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500, detail=f"Error processing files: {e}"
         )
-        material = Material(name=file.filename, **metrics)
-        db.add(material)
-
-    db.commit()
-    return {"message": "Database populated successfully!"}
 
 
 @n2dm_db.get("/query/")

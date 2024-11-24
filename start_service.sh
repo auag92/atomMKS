@@ -40,6 +40,7 @@ docker run -d \
     -v $DB_PATH:/data \
     --cpus=$CPUS \
     --memory=$MEMORY \
+    --network nanoporous-network \
     $IMAGE_NAME
 
 if [ $? -eq 0 ]; then
