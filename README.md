@@ -110,3 +110,10 @@ black --line-length 79 .
 isort .
 flake8 .
 ```
+
+
+## Docker set-up
+
+```
+docker network create nanoporous-network
+```

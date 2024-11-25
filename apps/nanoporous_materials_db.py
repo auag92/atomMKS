@@ -3,13 +3,19 @@ import os
 import ase.io as aio
 import numpy as np
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
-from sqlalchemy import Column, Float, Integer, String, create_engine
+from pydantic import BaseModel
+from sqlalchemy import Column, Float, Integer, String, create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from toolz.curried import pipe
 
 import atommks.grid_generator as gen
 import atommks.porosity as pore
+
+
+class SQLQuery(BaseModel):
+    query: str
+
 
 # FastAPI app initialization
 n2dm_db = FastAPI()
@@ -138,26 +144,50 @@ def compute_metrics(cif_path, radii, len_pixel, r_probe):
 async def add_material(
     name: str, file: UploadFile = File(...), db=Depends(get_db)
 ):
-    # Save uploaded file
-    file_path = f"/tmp/{file.filename}"
-    with open(file_path, "wb") as f:
-        f.write(file.file.read())
-
-    # Compute metrics
+    # Generate a temporary file path
     try:
-        metrics = compute_metrics(
-            file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error processing CIF: {e}"
-        )
+        filename = os.path.basename(file.filename)
+        file_path = f"/tmp/{filename}"
 
-    # Save to database
-    material = Material(name=name, **metrics)
-    db.add(material)
-    db.commit()
-    return {"message": f"Material '{name}' added successfully!"}
+        # Save uploaded file
+        with open(file_path, "wb") as f:
+            f.write(await file.read())  # Use `await` for async file reading
+
+        # Compute metrics
+        try:
+            metrics = compute_metrics(
+                file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail=f"Error processing CIF: {e}"
+            )
+
+        # Save to database
+        if db.query(Material).filter(Material.name == name).first():
+            raise HTTPException(
+                status_code=400,
+                detail=f"Material '{name}' already exists in the database.",
+            )
+
+        material = Material(name=name, **metrics)
+        db.add(material)
+        db.commit()
+
+        return {"message": f"Material '{name}' added successfully!"}
+
+    except HTTPException as e:
+        db.rollback()
+        raise e  # Re-raise HTTP exceptions for proper client feedback
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {e}"
+        )
+    finally:
+        # Ensure temporary file is cleaned up
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
 
 @n2dm_db.post("/populate_db/")
@@ -216,3 +246,73 @@ def query_materials(
     if pld_max is not None:
         query = query.filter(Material.pld <= pld_max)
     return query.all()
+
+
+@n2dm_db.post("/execute_sql/")
+async def execute_sql(request: SQLQuery, db=Depends(get_db)):
+    query = request.query  # Extract the query from the request body
+    try:
+        # Prepare the SQL statement
+        sql = text(query)
+
+        # Check if it's a SELECT query
+        if query.strip().lower().startswith("select"):
+            # Execute the query and fetch results
+            result = db.execute(sql).fetchall()
+
+            # Convert the result into a list of dictionaries
+            result_dicts = [
+                dict(row._mapping) for row in result
+            ]  # Use _mapping for Row compatibility
+
+            return {"result": result_dicts}
+
+        else:
+            # Execute non-SELECT queries (e.g., INSERT, UPDATE)
+            db.execute(sql)
+            db.commit()
+            return {"message": "Query executed successfully!"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500, detail=f"Error executing query: {e}"
+        )
+
+
+# @n2dm_db.post("/execute_sql/")
+# async def execute_sql(request: SQLQuery, db=Depends(get_db)):
+#     """
+#     Execute an arbitrary SQL query against the database.
+
+#     Args:
+#         query (str): The SQL query to execute.
+#         db: The database session dependency.
+
+#     Returns:
+#         dict: Result of the query or a success message for non-SELECT queries.
+#     """
+
+#     query = request.query
+
+#     try:
+#         # Prepare the SQL statement
+#         sql = text(query)
+
+#         # Check if the query is a SELECT statement
+#         if query.strip().lower().startswith("select"):
+#             # Execute and fetch results
+#             result = db.execute(sql).fetchall()
+#             return {"result": [dict(row) for row in result]}  # Convert rows to dictionaries
+
+#         else:
+#             # Execute non-SELECT statements
+#             db.execute(sql)
+#             db.commit()
+#             return {"message": "Query executed successfully!"}
+
+#     except Exception as e:
+#         db.rollback()
+#         raise HTTPException(
+#             status_code=500, detail=f"Error executing query: {e}"
+#         )
