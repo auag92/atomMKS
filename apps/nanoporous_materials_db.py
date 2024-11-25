@@ -1,3 +1,4 @@
+import concurrent.futures
 import logging
 import os
 
@@ -140,6 +141,39 @@ def compute_metrics(cif_path, radii, len_pixel, r_probe):
     }
 
 
+# Helper function to handle `compute_metrics` with a timeout
+def compute_metrics_with_timeout(
+    file_path, radii, len_pixel, r_probe, timeout=30
+):
+    """
+    Executes compute_metrics with a timeout.
+
+    Args:
+        file_path (str): Path to the CIF file.
+        radii (dict): Atomic radii dictionary.
+        len_pixel (int): Pixel length.
+        r_probe (float): Probe radius.
+        timeout (int): Timeout in seconds.
+
+    Returns:
+        dict: Computed metrics.
+
+    Raises:
+        TimeoutError: If execution exceeds the timeout.
+        Exception: For other exceptions raised by compute_metrics.
+    """
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(
+            compute_metrics, file_path, radii, len_pixel, r_probe
+        )
+        try:
+            return future.result(timeout=timeout)
+        except concurrent.futures.TimeoutError:
+            raise TimeoutError(
+                f"compute_metrics timed out after {timeout} seconds"
+            )
+
+
 # Endpoints
 
 
@@ -172,8 +206,16 @@ async def add_material(
         # Compute metrics
         try:
             logger.info(f"Computing metrics for file: {file_path}")
-            metrics = compute_metrics(
-                file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5
+            # metrics = compute_metrics(
+            #     file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5
+            # )
+
+            metrics = compute_metrics_with_timeout(
+                file_path,
+                {"Si": 1.35, "O": 1.35, "H": 0.5},
+                10,
+                0.5,
+                timeout=300,
             )
             logger.info(f"Metrics computed successfully for material: {name}")
         except Exception as e:
@@ -258,8 +300,15 @@ async def populate_db(files: list[UploadFile] = File(...), db=Depends(get_db)):
 
                 # Compute metrics
                 logger.info(f"Computing metrics for file: {file_path}")
-                metrics = compute_metrics(
-                    file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5
+                # metrics = compute_metrics(
+                #     file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5
+                # )
+                metrics = compute_metrics_with_timeout(
+                    file_path,
+                    {"Si": 1.35, "O": 1.35, "H": 0.5},
+                    10,
+                    0.5,
+                    timeout=120,
                 )
                 logger.info(
                     f"Metrics computed successfully for material: {material_name}"
