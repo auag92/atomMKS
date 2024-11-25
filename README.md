@@ -116,4 +116,8 @@ flake8 .
 
 ```
 docker network create nanoporous-network
+# start the service
+./start_db_service.sh
+stop the service
+./stop_db_service.sh
 ```
