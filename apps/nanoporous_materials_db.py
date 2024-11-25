@@ -1,8 +1,5 @@
-import asyncio
-import concurrent.futures
 import logging
 import os
-from typing import List
 
 import ase.io as aio
 import numpy as np
@@ -10,7 +7,7 @@ from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from pydantic import BaseModel
 from sqlalchemy import Column, Float, Integer, String, create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from toolz.curried import pipe
 
 import atommks.grid_generator as gen
@@ -150,27 +147,46 @@ def compute_metrics(cif_path, radii, len_pixel, r_probe):
 async def add_material(
     name: str, file: UploadFile = File(...), db=Depends(get_db)
 ):
-    # Generate a temporary file path
+    """
+    Endpoint to add a single material to the database.
+
+    Args:
+        name (str): Name of the material.
+        file (UploadFile): Uploaded CIF file.
+        db (Session): Database session.
+
+    Returns:
+        dict: Success message or error detail.
+    """
+    logger.info(f"Received request to add material: {name}")
     try:
         filename = os.path.basename(file.filename)
         file_path = f"/tmp/{filename}"
+        logger.info(f"Saving uploaded file to: {file_path}")
 
         # Save uploaded file
         with open(file_path, "wb") as f:
-            f.write(await file.read())  # Use `await` for async file reading
+            f.write(await file.read())
+        logger.info(f"File saved successfully: {file_path}")
 
         # Compute metrics
         try:
+            logger.info(f"Computing metrics for file: {file_path}")
             metrics = compute_metrics(
                 file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5
             )
+            logger.info(f"Metrics computed successfully for material: {name}")
         except Exception as e:
+            logger.error(f"Error computing metrics for file {file_path}: {e}")
             raise HTTPException(
                 status_code=500, detail=f"Error processing CIF: {e}"
             )
 
         # Save to database
         if db.query(Material).filter(Material.name == name).first():
+            logger.warning(
+                f"Material '{name}' already exists in the database."
+            )
             raise HTTPException(
                 status_code=400,
                 detail=f"Material '{name}' already exists in the database.",
@@ -179,13 +195,16 @@ async def add_material(
         material = Material(name=name, **metrics)
         db.add(material)
         db.commit()
+        logger.info(f"Material '{name}' added successfully to the database.")
 
         return {"message": f"Material '{name}' added successfully!"}
 
     except HTTPException as e:
+        logger.error(f"HTTPException occurred: {e.detail}")
         db.rollback()
-        raise e  # Re-raise HTTP exceptions for proper client feedback
+        raise e
     except Exception as e:
+        logger.error(f"Unexpected error occurred while adding material: {e}")
         db.rollback()
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred: {e}"
@@ -194,141 +213,91 @@ async def add_material(
         # Ensure temporary file is cleaned up
         if os.path.exists(file_path):
             os.remove(file_path)
+            logger.info(f"Temporary file cleaned up: {file_path}")
 
 
 @n2dm_db.post("/populate_db/")
 async def populate_db(files: list[UploadFile] = File(...), db=Depends(get_db)):
+    """
+    Endpoint to populate the database with multiple materials from uploaded CIF files.
+
+    Args:
+        files (list[UploadFile]): List of uploaded CIF files.
+        db (Session): Database session.
+
+    Returns:
+        dict: Success message or error detail.
+    """
+    logger.info("Received request to populate the database.")
+    skipped_files = []
+    processed_files = []
     try:
         for file in files:
-            # Extract the base file name to avoid path issues
             filename = os.path.basename(file.filename)
             material_name = filename.split(".")[0]
-
-            # Generate a temporary file path
             file_path = f"/tmp/{filename}"
+            logger.info(f"Processing file: {filename}")
 
-            # Write the uploaded file to the temporary directory
-            with open(file_path, "wb") as f:
-                f.write(
-                    await file.read()
-                )  # Use `await` to handle async file reading
-
-            # Compute metrics and add to DB
-            metrics = compute_metrics(
-                file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5
-            )
-
-            # Ensure unique material names in the database
+            # Check if the material already exists in the database
             if (
                 db.query(Material)
                 .filter(Material.name == material_name)
                 .first()
             ):
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Material {material_name} already exists in the database.",  # noqa: E501
+                logger.warning(
+                    f"Material '{material_name}' already exists. Skipping."
+                )
+                skipped_files.append(material_name)
+                continue
+
+            try:
+                # Write the uploaded file to the temporary directory
+                with open(file_path, "wb") as f:
+                    f.write(await file.read())
+                logger.info(f"File saved successfully: {file_path}")
+
+                # Compute metrics
+                logger.info(f"Computing metrics for file: {file_path}")
+                metrics = compute_metrics(
+                    file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5
+                )
+                logger.info(
+                    f"Metrics computed successfully for material: {material_name}"
                 )
 
-            material = Material(name=material_name, **metrics)
-            db.add(material)
+                # Add material to the database
+                material = Material(name=material_name, **metrics)
+                db.add(material)
+                processed_files.append(material_name)
+                logger.info(
+                    f"Material '{material_name}' added to the database."
+                )
+            except Exception as e:
+                logger.error(f"Error processing file {filename}: {e}")
+                continue  # Skip to the next file
+            finally:
+                # Ensure temporary file is cleaned up
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                    logger.info(f"Temporary file cleaned up: {file_path}")
 
+        # Commit the successfully added materials
         db.commit()
-        return {"message": "Database populated successfully!"}
+        logger.info("Database populated successfully.")
+        return {
+            "message": "Database populated successfully!",
+            "processed": processed_files,
+            "skipped": skipped_files,
+        }
 
     except Exception as e:
         db.rollback()
+        logger.error(
+            f"Unexpected error occurred while populating database: {e}"
+        )
         raise HTTPException(
             status_code=500, detail=f"Error processing files: {e}"
         )
-
-
-# # Function to process individual files
-# def process_file(file_data):
-#     """
-#     Function to process a single file. Perform computation and return a Material object.
-
-#     Args:
-#         file_data (tuple): A tuple of (file_path, material_name).
-
-#     Returns:
-#         Material: Processed Material object.
-#     """
-#     file_path, material_name = file_data
-#     # Replace this with your actual compute_metrics function
-#     metrics = compute_metrics(file_path, {"Si": 1.35, "O": 1.35, "H": 0.5}, 10, 0.5)
-#     return Material(name=material_name, **metrics)
-
-# # Main endpoint for populating the database
-# @n2dm_db.post("/populate_db/")
-# async def populate_db(
-#     files: List[UploadFile] = File(...),
-#     db=Depends(get_db),
-# ):
-#     """
-#     Endpoint to populate the database with materials from uploaded CIF files.
-
-#     Args:
-#         files (List[UploadFile]): List of uploaded CIF files.
-#         db (Session): Database session.
-
-#     Returns:
-#         dict: A success message or an error.
-#     """
-#     logger.info("Starting populate_db endpoint")
-#     file_data_list = []  # To store file paths and filenames
-
-#     try:
-#         # Step 1: Save uploaded files and prepare data for processing
-#         for file in files:
-#             filename = os.path.basename(file.filename)
-#             file_path = f"/tmp/{filename}"
-#             material_name = filename.split(".")[0]
-
-#             # Write the uploaded file to the temporary directory
-#             with open(file_path, "wb") as f:
-#                 f.write(await file.read())
-#             logger.info(f"File saved: {file_path}")
-
-#             # Ensure unique material names in the database
-#             if db.query(Material).filter(Material.name == material_name).first():
-#                 logger.warning(f"Material {material_name} already exists in the database.")
-#                 raise HTTPException(
-#                     status_code=400,
-#                     detail=f"Material {material_name} already exists in the database.",
-#                 )
-
-#             file_data_list.append((file_path, material_name))
-
-#         # Step 2: Use multiprocessing to process files
-#         materials = []
-#         logger.info("Processing files using multiprocessing")
-#         with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
-#             futures = {executor.submit(process_file, file_data): file_data for file_data in file_data_list}
-
-#             for future in concurrent.futures.as_completed(futures, timeout=512):
-#                 file_data = futures[future]
-#                 try:
-#                     material = future.result()  # Retrieve result from future
-#                     materials.append(material)
-#                 except concurrent.futures.TimeoutError:
-#                     logger.error(f"Timeout processing file: {file_data}")
-#                 except Exception as e:
-#                     logger.error(f"Error processing file {file_data}: {e}")
-
-#         # Step 3: Add all processed materials to the database
-#         logger.info("Adding processed materials to the database")
-#         db.add_all(materials)
-#         db.commit()
-#         logger.info("Database populated successfully")
-#         return {"message": "Database populated successfully!"}
-
-#     except Exception as e:
-#         db.rollback()
-#         logger.error(f"Error processing files: {e}")
-#         raise HTTPException(
-#             status_code=500,
-#             detail=f"Error processing files: {e}",
-#         )
 
 
 @n2dm_db.get("/query/")
