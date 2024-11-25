@@ -5,8 +5,8 @@ IMAGE_NAME="nanoporous-image"
 CONTAINER_NAME="nanoporous-service"
 PORT=8000
 DB_PATH="$(pwd)/persist"  # Dynamically set DB path based on the current working directory
-CPUS=8
-MEMORY="16g"
+CPUS=32
+MEMORY="256g"
 DOCKERFILE="Dockerfile"  # Specify the Dockerfile name
 
 # Check if the persist directory exists
